@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Torque Data Display</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <h1>Torque Data Records</h1>
+    <table border="1">
+        <tr>
+            <th>Part Number</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Shift</th>
+            <th>Station 1 Torque 1</th>
+            <th>Station 1 Torque 2</th>
+            <th>Station 1 Torque 3</th>
+            <th>Station 1 Status</th>
+            <th>Station 2 Torque 1</th>
+            <th>Station 2 Torque 2</th>
+            <th>Station 2 Torque 3</th>
+            <th>Station 2 Status</th>
+            <th>Station 3 Torque 1</th>
+            <th>Station 3 Torque 2</th>
+            <th>Station 3 Torque 3</th>
+            <th>Station 3 Status</th>
+            <th>Station 4 Torque 1</th>
+            <th>Station 4 Torque 2</th>
+            <th>Station 4 Torque 3</th>
+            <th>Station 4 Status</th>
+        </tr>
+        {% for data in torque_data_list %}
+        <tr>
+            <td>{{ data.part_number }}</td>
+            <td>{{ data.date }}</td>
+            <td>{{ data.time }}</td>
+            <td>{{ data.shift }}</td>
+            <td class="station1">{{ data.station1_torque1 }}</td>
+            <td class="station1">{{ data.station1_torque2 }}</td>
+            <td class="station1">{{ data.station1_torque3 }}</td>
+            <td class="station1">{{ data.station1_status }}</td>
+            <td class="station2">{{ data.station2_torque1 }}</td>
+            <td class="station2">{{ data.station2_torque2 }}</td>
+            <td class="station2">{{ data.station2_torque3 }}</td>
+            <td class="station2">{{ data.station2_status }}</td>
+            <td class="station3">{{ data.station3_torque1 }}</td>
+            <td class="station3">{{ data.station3_torque2 }}</td>
+            <td class="station3">{{ data.station3_torque3 }}</td>
+            <td class="station3">{{ data.station3_status }}</td>
+            <td class="station4">{{ data.station4_torque1 }}</td>
+            <td class="station4">{{ data.station4_torque2 }}</td>
+            <td class="station4">{{ data.station4_torque3 }}</td>
+            <td class="station4">{{ data.station4_status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
