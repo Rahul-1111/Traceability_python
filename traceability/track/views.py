@@ -1,24 +1,28 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
+from django.http import JsonResponse
 from .qr_utils import generate_qr_codes_batch
 from .models import TorqueData
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Combined view
-def generate_and_display(request):
-    message = None
+# View for rendering the combined page
+def combined_page(request):
+    return render(request, 'track/combined_page.html')
+
+# View to handle QR code generation
+def generate_qr_codes(request):
     if request.method == "POST":
         try:
             lot_number = int(request.POST.get("lot_number"))  # Get the lot number from the form
-            message = generate_qr_codes_batch(lot_number)  # Generate QR codes
+            response_message = generate_qr_codes_batch(lot_number)
+            return JsonResponse({"message": response_message})
         except Exception as e:
             logger.error(f"An error occurred: {e}")
-            message = f"An error occurred: {e}"
+            return JsonResponse({"error": str(e)}, status=400)
 
-    # Fetch all torque data
-    torque_data_list = TorqueData.objects.all()
-    return render(request, 'track/combined_page.html', {
-        'torque_data_list': torque_data_list,
-        'message': message
-    })
+# API endpoint to fetch torque data as JSON
+def fetch_torque_data(request):
+    if request.method == "GET":
+        data = list(TorqueData.objects.values())  # Fetch all data as a list of dictionaries
+        return JsonResponse({"data": data})

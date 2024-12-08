@@ -5,7 +5,7 @@ class TorqueDataAdmin(admin.ModelAdmin):
     # Display specific fields as columns in the admin table
     list_display = (
         'id',  # You can add 'id' to track each record easily
-        'date', 'time', 
+        'date', 'time', 'shift',
         'station1_torque1', 'station1_torque2', 'station1_torque3', 'station1_status',
         'station2_torque1', 'station2_torque2', 'station2_torque3', 'station2_status',
         'station3_torque1', 'station3_torque2', 'station3_torque3', 'station3_status',
