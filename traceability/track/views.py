@@ -3,6 +3,11 @@ from django.http import JsonResponse
 from .qr_utils import generate_qr_codes_batch
 from .models import TorqueData
 import logging
+from django.contrib import admin
+
+admin.site.index_title = 'Tracebility'
+admin.site.site_header = 'Admin'
+admin.site.site_title = 'Tracebility'
 
 logger = logging.getLogger(__name__)
 
