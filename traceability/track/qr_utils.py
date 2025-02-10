@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 # Define the output directory for QR codes
 OUTPUT_DIR = r"D:\Shubham\Fourfront\Traceability_python\traceability\qrcodes"
 
+# Track the last serial number for each lot
+lot_serial_tracker = {}
+
 # Function to generate ZPL QR code command string
 def generate_zpl_qrcode(data):
     zpl = f"""
@@ -55,8 +58,24 @@ def generate_qrcode_image(data, filename="qrcode_image.png"):
     logger.info(f"QR code saved at {filepath}")
 
 # Function to print only **one** QR code per click
-def generate_qr_codes_batch(lot_number, serial_number):
+def generate_qr_codes_batch(lot_number):
     """ Generates and prints only ONE QR code per function call """
+
+    # If the lot is not in tracking, start from 1
+    if lot_number not in lot_serial_tracker:
+        lot_serial_tracker[lot_number] = 1  
+
+    serial_number = lot_serial_tracker[lot_number]
+
+    # Stop printing when all QR codes for the lot are printed
+    if serial_number > lot_number:
+        logger.info(f"✅ Lot {lot_number} completed. Resetting for new lot input.")
+
+        # Delete completed lot from tracking
+        del lot_serial_tracker[lot_number]
+
+        return f"✅ Lot {lot_number} completed. Please enter a new lot number."
+
     # Get current date and time
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
@@ -64,7 +83,7 @@ def generate_qr_codes_batch(lot_number, serial_number):
     # Create QR code data
     qr_data = (
         f"SN: {serial_number}\n"
-        f"PN: {serial_number}\n"  # Use serial number as part number
+        f"PN: {serial_number}\n"
         f"Lot: {lot_number}\n"
         f"Date: {current_date}\n"
         f"Time: {current_time}"
@@ -79,4 +98,7 @@ def generate_qr_codes_batch(lot_number, serial_number):
 
     logger.info(f"Printed: SN {serial_number}, Lot {lot_number}")
 
-    return f"QR code for SN {serial_number} in Lot {lot_number} printed successfully!"
+    # Increment serial number for the next request
+    lot_serial_tracker[lot_number] += 1
+
+    return f"✅ QR code for SN {serial_number} in Lot {lot_number} printed successfully!"

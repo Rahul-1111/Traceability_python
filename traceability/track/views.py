@@ -30,17 +30,8 @@ def generate_qr_codes(request):
             if lot_number <= 0:
                 return JsonResponse({"error": "Lot number must be a positive integer"}, status=400)
 
-            # Track the serial number per lot
-            if lot_number not in lot_serial_tracker:
-                lot_serial_tracker[lot_number] = 1  # Start at 1
-
-            serial_number = lot_serial_tracker[lot_number]
-
             # Generate and print **only one** QR code
-            response_message = generate_qr_codes_batch(lot_number, serial_number)
-
-            # Increment the serial number for the next request
-            lot_serial_tracker[lot_number] += 1
+            response_message = generate_qr_codes_batch(lot_number)
 
             return JsonResponse({"message": response_message})
 
