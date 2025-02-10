@@ -1,7 +1,9 @@
 from datetime import datetime, time
 import logging
-from pymodbus.client import ModbusTcpClient
+from pymodbus3.client import ModbusTcpClient
 from .models import TorqueData
+import qrcode
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,17 +22,24 @@ def get_current_shift() -> str:
 # Function to fetch PLC data
 def fetch_plc_data():
     client = ModbusTcpClient('192.168.0.1', port=502)
-    client.connect()
+    if not client.connect():
+        logger.error("Unable to connect to Modbus server.")
+        return {}
 
     # Assuming torque data is stored in holding registers
-    torque_data = {
-        "station1": client.read_holding_registers(0, 3),
-        "station2": client.read_holding_registers(3, 3),
-        "station3": client.read_holding_registers(6, 3),
-        "station4": client.read_holding_registers(9, 3),
-    }
-
-    client.close()
+    try:
+        torque_data = {
+            "station1": client.read_holding_registers(0, 3),
+            "station2": client.read_holding_registers(3, 3),
+            "station3": client.read_holding_registers(6, 3),
+            "station4": client.read_holding_registers(9, 3),
+        }
+    except Exception as e:
+        logger.error(f"Error reading from Modbus server: {e}")
+        return {}
+    finally:
+        client.close()
+    
     return torque_data
 
 # Function to update or create TorqueData entry
@@ -39,7 +48,7 @@ def update_or_create_torque_data(part_number):
     torque_data = fetch_plc_data()
 
     # Check for errors in data fetching
-    if any(data.isError() for data in torque_data.values()):
+    if not torque_data or any(data.isError() for data in torque_data.values()):
         return "Error fetching PLC data."
 
     # Extracting data from the fetched values

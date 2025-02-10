@@ -16,15 +16,39 @@ def combined_page(request):
     return render(request, 'track/combined_page.html')
 
 # View to handle QR code generation
+lot_serial_tracker = {}
+
 def generate_qr_codes(request):
     if request.method == "POST":
+        lot_number = request.POST.get("lot_number")
+
+        if not lot_number:
+            return JsonResponse({"error": "Lot number is required"}, status=400)
+
         try:
-            lot_number = int(request.POST.get("lot_number"))  # Get the lot number from the form
-            response_message = generate_qr_codes_batch(lot_number)
+            lot_number = int(lot_number)
+            if lot_number <= 0:
+                return JsonResponse({"error": "Lot number must be a positive integer"}, status=400)
+
+            # Track the serial number per lot
+            if lot_number not in lot_serial_tracker:
+                lot_serial_tracker[lot_number] = 1  # Start at 1
+
+            serial_number = lot_serial_tracker[lot_number]
+
+            # Generate and print **only one** QR code
+            response_message = generate_qr_codes_batch(lot_number, serial_number)
+
+            # Increment the serial number for the next request
+            lot_serial_tracker[lot_number] += 1
+
             return JsonResponse({"message": response_message})
+
+        except ValueError:
+            return JsonResponse({"error": "Invalid lot number. Please enter a number."}, status=400)
         except Exception as e:
-            logger.error(f"An error occurred: {e}")
-            return JsonResponse({"error": str(e)}, status=400)
+            logger.error(f"Unexpected error: {e}", exc_info=True)
+            return JsonResponse({"error": str(e)}, status=500)
 
 # API endpoint to fetch torque data as JSON
 def fetch_torque_data(request):

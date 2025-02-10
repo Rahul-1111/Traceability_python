@@ -14,16 +14,16 @@ OUTPUT_DIR = r"D:\Shubham\Fourfront\Traceability_python\traceability\qrcodes"
 # Function to generate ZPL QR code command string
 def generate_zpl_qrcode(data):
     zpl = f"""
-CT~~CD,~CC^~CT~
-^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD15^JUS^LRN^CI0^XZ
-^XA
-^MMT
-^PW400
-^LL0200
-^LS0
-^FT119,200^BQN,2,4
-^FH\^FDLA,{data}^FS
-^PQ1,0,1,Y^XZ
+    CT~~CD,~CC^~CT~
+    ^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD15^JUS^LRN^CI0^XZ
+    ^XA
+    ^MMT
+    ^PW400
+    ^LL0200
+    ^LS0
+    ^FT119,200^BQN,2,4
+    ^FH\\^FDLA,{data}^FS
+    ^PQ1,0,1,Y^XZ
     """
     return zpl
 
@@ -31,20 +31,17 @@ def generate_zpl_qrcode(data):
 def print_zpl(zpl_command):
     try:
         z = Zebra()
-        z.setqueue("ZDesigner GC420t (copy 1)")  # Ensure this matches your system's printer name
+        z.setqueue("ZDesigner GC420t (copy 1)")  # Update with your printer name
         z.output(zpl_command)
         logger.info("ZPL command sent to printer successfully.")
     except Exception as e:
         logger.error(f"Error sending ZPL to printer: {e}")
 
-# Function to generate and save the QR code as an image
+# Function to generate and save a single QR code image
 def generate_qrcode_image(data, filename="qrcode_image.png"):
-    # Ensure the output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # Create the full path to save the image
+    os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure the output directory exists
     filepath = os.path.join(OUTPUT_DIR, filename)
-    
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -57,25 +54,29 @@ def generate_qrcode_image(data, filename="qrcode_image.png"):
     img.save(filepath)
     logger.info(f"QR code saved at {filepath}")
 
-# Function to generate and print QR codes for a batch
-def generate_qr_codes_batch(lot_number):
-    serial_number = 1
-    part_number = 1
+# Function to print only **one** QR code per click
+def generate_qr_codes_batch(lot_number, serial_number):
+    """ Generates and prints only ONE QR code per function call """
+    # Get current date and time
+    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    current_time = datetime.datetime.now().strftime("%H:%M:%S")
 
-    for i in range(lot_number):
-        qr_data = f"SN: {serial_number}, PN: {part_number}, Lot: {lot_number}, Date: {datetime.datetime.now().date()}, Time: {datetime.datetime.now().time()}"
-        
-        # Generate ZPL QR code command
-        zpl_qrcode = generate_zpl_qrcode(qr_data)
-        
-        # Print the ZPL command to the Zebra printer
-        print_zpl(zpl_qrcode)
-        
-        # Generate and save the QR code image
-        generate_qrcode_image(qr_data, f"qrcode_{serial_number}.png")
-        
-        serial_number += 1
-        part_number += 1
-        logger.info(f"Part {i + 1}/{lot_number} processed: SN {serial_number - 1}, PN {part_number - 1}")
+    # Create QR code data
+    qr_data = (
+        f"SN: {serial_number}\n"
+        f"PN: {serial_number}\n"  # Use serial number as part number
+        f"Lot: {lot_number}\n"
+        f"Date: {current_date}\n"
+        f"Time: {current_time}"
+    )
 
-    return f"QR codes for lot {lot_number} generated and printed successfully!"
+    # Generate and send to printer
+    zpl_qrcode = generate_zpl_qrcode(qr_data)
+    print_zpl(zpl_qrcode)
+
+    # Generate and save QR code image
+    generate_qrcode_image(qr_data, f"qrcode_{serial_number}.png")
+
+    logger.info(f"Printed: SN {serial_number}, Lot {lot_number}")
+
+    return f"QR code for SN {serial_number} in Lot {lot_number} printed successfully!"
